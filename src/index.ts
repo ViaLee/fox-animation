@@ -20,16 +20,20 @@ const init = () => {
 
     // 创建三角形
     const geometry1 = new THREE.BufferGeometry();
-    // 创建顶点数据, 逆时针正面
+    // 创建顶点数据,  x1,y1,z1,x2,y2,z2  构成的面有正反面，定点顺序为逆时针渲染为正面
     const vertices = new Float32Array([
-        -1, -1, 0, 1, -1, 0, 1, 1, 0
+        -1, -1, 0, 1, -1, 0, 1, 1, 0,
+        1, 1, 0, -1, 1, 0, -1, -1, 0
     ])
     // 添加属性
     geometry1.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
     // 添加材质
     const g1Material = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
+        wireframe: true,
+        side: THREE.DoubleSide  //设置显示双面，默认只展示正面
     })
+
     const plane = new THREE.Mesh(geometry1, g1Material)
     scene.add(plane)
 
