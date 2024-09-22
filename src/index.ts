@@ -18,7 +18,23 @@ const init = () => {
     renderer.setSize(window.innerWidth, window.innerHeight); //设置为窗口大小
     document.body.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1); //创建几何体
+    // 创建三角形
+    const geometry1 = new THREE.BufferGeometry();
+    // 创建顶点数据, 逆时针正面
+    const vertices = new Float32Array([
+        -1, -1, 0, 1, -1, 0, 1, 1, 0
+    ])
+    // 添加属性
+    geometry1.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+    // 添加材质
+    const g1Material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+    })
+    const plane = new THREE.Mesh(geometry1, g1Material)
+    scene.add(plane)
+
+    //创建几何体
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })  //材质 十六进制
     const parentMaterial = new THREE.MeshBasicMaterial({ color: '#ff7f50' })  //材质
     parentMaterial.wireframe = true  //线框材质
