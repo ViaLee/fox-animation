@@ -18,24 +18,35 @@ const init = () => {
     renderer.setSize(window.innerWidth, window.innerHeight); //设置为窗口大小
     document.body.appendChild(renderer.domElement);
 
-    // 创建三角形
-    const geometry1 = new THREE.BufferGeometry();
-    // 创建顶点数据,  x1,y1,z1,x2,y2,z2  构成的面有正反面，定点顺序为逆时针渲染为正面
+    // 创建平面
+    const square = new THREE.BufferGeometry();
+    /*  单点->两个三角形方式绘制
+    创建顶点数据,  x1,y1,z1,x2,y2,z2  构成的面有正反面，定点顺序为逆时针渲染为正面
     const vertices = new Float32Array([
         -1, -1, 0, 1, -1, 0, 1, 1, 0,
         1, 1, 0, -1, 1, 0, -1, -1, 0
     ])
-    // 添加属性
-    geometry1.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+     添加属性
+    square.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+    */
+    //    索引绘制  四个顶点绘制两个三角形，一个面
+    const vertices = new Float32Array([
+        -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0
+    ])
+    square.setAttribute('position', new THREE.BufferAttribute(vertices, 3)) //3个为一个顶点数据
+    const indices = new Uint16Array([0, 1, 2, 2, 3, 0])  //对应vertices中的顶点序列  优点：快速复用顶点
+
+    square.setIndex(new THREE.BufferAttribute(indices, 1));
     // 添加材质
     const g1Material = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
         wireframe: true,
         side: THREE.DoubleSide  //设置显示双面，默认只展示正面
     })
-
-    const plane = new THREE.Mesh(geometry1, g1Material)
+    // 多种材质的情况：指定点到点的索引 定义为group (startindex,endindex,materialindex)materialIndex为g1Material数组的索引
+    const plane = new THREE.Mesh(square, g1Material)
     scene.add(plane)
+
 
     //创建几何体
     const geometry = new THREE.BoxGeometry(1, 1, 1);
