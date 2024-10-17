@@ -74,6 +74,24 @@ const init = () => {
     // controls.autoRotate = true;
 
 
+    // 纹理加载器
+    let textureLoader = new THREE.TextureLoader()
+    // 加载纹理
+    let texture = textureLoader.load('')
+    // 加载ao贴图
+    let aoMap = textureLoader.load('')
+
+    let planeGeometry = new THREE.PlaneGeometry(1, 1)
+    let planeMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        map: texture,
+        transparent: true,
+        aoMap: aoMap
+    })
+    let plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
+    scene.add(plane2);
+
+
     // 设置相机位置
     camera.position.z = 5;
     camera.lookAt(0, 0, 0);
