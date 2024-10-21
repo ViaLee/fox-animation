@@ -1,6 +1,10 @@
 import * as THREE from 'three';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+// gltf加载器
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 const init = () => {
     // 创建场景
@@ -17,6 +21,9 @@ const init = () => {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight); //设置为窗口大小
     document.body.appendChild(renderer.domElement);
+
+    //解决加载gltf格式模型颜色偏差问题
+    renderer.outputEncoding = THREE.sRGBEncoding;
 
     // 创建平面
     const square = new THREE.BufferGeometry();
@@ -158,6 +165,94 @@ const init = () => {
 
 }
 
-export default init;
+const initFromBlender = () => {
+    // 创建场景
+    const scene = new THREE.Scene();
+    // 创建相机
+    const camera = new THREE.PerspectiveCamera(
+        45,//视角
+        window.innerWidth / window.innerHeight,
+        0.1,  //近平面
+        1000  //远平面
+    )
+
+    // 创建渲染器
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight); //设置为窗口大小
+    document.body.appendChild(renderer.domElement);
+
+    // 添加轨道遥杆 可指定观察对象
+    const controls = new OrbitControls(camera, renderer.domElement)
+    // 阻尼惯性 系数
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    // 自动旋转
+    // controls.autoRotate = true;
+
+    // 设置相机位置
+    camera.position.z = 5;
+    camera.lookAt(0, 0, 0);
+
+    const axesHelper = new THREE.AxesHelper(5)
+    scene.add(axesHelper);
+
+    const animate = () => {
+        controls.update()
+        requestAnimationFrame(animate);
+        // 渲染
+        renderer.render(scene, camera)
+    }
+
+    animate()
+
+
+    /*  画布自适应窗口大小 */
+    window.addEventListener('resize', () => {
+        // 渲染器宽高比
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        // 相机宽高比
+        camera.aspect = window.innerWidth / window.innerHeight
+        // 相机投影矩阵
+        camera.updateProjectionMatrix();
+    })
+
+    let params = {}
+
+    // 添加调试工具栏
+    const gui = new GUI()
+
+    //雾 线性
+    // scene.fog = new THREE.Fog(0x999999, 0.1, 50);
+    // 指数
+    // scene.fog = new THREE.FogExp2(0x999999,0.1)
+
+    // --------------------------------导入模型
+    // 实例化加载器 gltf
+    // 加载模型
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load(
+        './fox2.glb',
+        (gltf) => {
+            console.log('success', gltf)
+            scene.add(gltf.scene)
+        }
+    )
+
+    // 压缩
+    // let dracoloader = new DRACOLoader();
+    // dracoloader.setDecoderPath('')
+
+
+
+    // 加载环境贴图
+    const rgbeLoader = new RGBELoader()
+    rgbeLoader.load('./grass.hdr', (envbg => {
+        envbg.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = envbg
+        console.log('envbg')
+    }))
+}
+
+export default initFromBlender;
 
 // export const a = 1;
