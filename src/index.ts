@@ -231,10 +231,16 @@ const initFromBlender = () => {
     // 加载模型
     const gltfLoader = new GLTFLoader();
     gltfLoader.load(
-        './fox2.glb',
+        './night.glb',
         (gltf) => {
             console.log('success', gltf)
             scene.add(gltf.scene)
+            const leftLight = gltf.scene.getObjectByName('左')
+            leftLight.visible = false
+            const rightLight = gltf.scene.getObjectByName('右')
+            rightLight.visible = false
+            const fire = gltf.scene.getObjectByName('空物体005')?.getObjectByName('立方体009')
+            fire.visible = false
         }
     )
 
