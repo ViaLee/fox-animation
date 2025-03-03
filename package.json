@@ -10,16 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^9.6.0",
+    "@react-three/fiber": "^8.0.27",
     "@turf/turf": "^7.2.0",
-    "mapshaper": "^0.6.102",
+    "d3-geo": "^3.0.1",
+    "leaflet": "^1.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-leaflet": "^5.0.0",
     "three": "^0.168.0",
-    "world-atlas": "^2.0.2",
-    "@react-three/fiber": "^8.0.27",
-    "@react-three/drei": "^9.6.0",
-    "d3-geo": "^3.0.1",
-    "topojson-client": "^3.1.0"
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
