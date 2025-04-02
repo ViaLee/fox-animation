@@ -10,17 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@react-three/drei": "^9.6.0",
-    "@react-three/fiber": "^8.0.27",
-    "@turf/turf": "^7.2.0",
-    "d3-geo": "^3.0.1",
-    "leaflet": "^1.9.4",
+    "@react-three/drei": "^10.0.5",
+    "@react-three/eslint-plugin": "^0.1.2",
+    "@react-three/fiber": "^8.18.0",
+    "leva": "^0.10.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-leaflet": "^5.0.0",
-    "three": "^0.168.0",
-    "topojson-client": "^3.1.0",
-    "world-atlas": "^2.0.2"
+    "react-responsive": "^10.0.1",
+    "three": "^0.168.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -28,10 +25,13 @@
     "@types/react-dom": "^18.3.0",
     "@types/three": "0.168.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.10",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"

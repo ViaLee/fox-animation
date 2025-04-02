@@ -1,12 +1,12 @@
-import "./App.css";
-import Initial from ".";
-import MapChart from "./wordmap";
-import WorldMap from "./wordmap";
+import Hero from './sections/Hero';
+import Navbar from './sections/Navbar';
 
 function App() {
-  // return <Initial />
-  // return <MapChart />;
-  return <WorldMap />;
+
+  return <main className='max-w-7xl mx-auto'>
+    <Navbar />
+    <Hero />
+  </main>
 }
 
 export default App;
