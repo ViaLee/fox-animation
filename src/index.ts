@@ -1,182 +1,54 @@
 import * as THREE from "three";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import React, { useEffect } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 // gltf加载器
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 const init = () => {
+  console.log("初始化Three.js场景...");
+  // 确保容器存在
+  const container = document.getElementById("three-container");
+  if (!container) {
+    console.error("找不到three-container元素");
+    return;
+  }
+  console.log("找到three-container元素");
+
   // 创建场景
   const scene = new THREE.Scene();
+  // 添加背景色以便看到canvas
+  scene.background = new THREE.Color(0xdddddd);
+
   // 创建相机
   const camera = new THREE.PerspectiveCamera(
     45, //视角
-    window.innerWidth / window.innerHeight,
+    container.clientWidth / container.clientHeight,
     0.1, //近平面
     1000 //远平面
   );
-
-  // 创建渲染器
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight); //设置为窗口大小
-  document.body.appendChild(renderer.domElement);
-
-  //解决加载gltf格式模型颜色偏差问题
-  renderer.outputEncoding = THREE.sRGBEncoding;
-
-  // 创建平面
-  const square = new THREE.BufferGeometry();
-  /*  单点->两个三角形方式绘制
-    创建顶点数据,  x1,y1,z1,x2,y2,z2  构成的面有正反面，定点顺序为逆时针渲染为正面
-    const vertices = new Float32Array([
-        -1, -1, 0, 1, -1, 0, 1, 1, 0,
-        1, 1, 0, -1, 1, 0, -1, -1, 0
-    ])
-     添加属性
-    square.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-    */
-  //    索引绘制  四个顶点绘制两个三角形，一个面
-  const vertices = new Float32Array([-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0]);
-  square.setAttribute("position", new THREE.BufferAttribute(vertices, 3)); //3个为一个顶点数据
-  const indices = new Uint16Array([0, 1, 2, 2, 3, 0]); //对应vertices中的顶点序列  优点：快速复用顶点
-
-  square.setIndex(new THREE.BufferAttribute(indices, 1));
-  // 添加材质
-  const g1Material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
-    side: THREE.DoubleSide, //设置显示双面，默认只展示正面
-  });
-  // 多种材质的情况：指定点到点的索引 定义为group (startindex,endindex,materialindex)materialIndex为g1Material数组的索引
-  const plane = new THREE.Mesh(square, g1Material);
-  scene.add(plane);
-
-  //创建几何体
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); //材质 十六进制
-  const parentMaterial = new THREE.MeshBasicMaterial({ color: "#ff7f50" }); //材质
-  parentMaterial.wireframe = true; //线框材质
-  const parentCube = new THREE.Mesh(geometry, parentMaterial);
-  const cube = new THREE.Mesh(geometry, material); //创建网格
-
-  scene.add(parentCube);
-  parentCube.add(cube);
-
-  parentCube.position.set(-3, 0, 0);
-  cube.position.set(3, 0, 0);
-  // cube.scale.set(1,1,1,) //各轴放大倍数 相对于父级
-  // 旋转  欧拉角
-  cube.rotation.x = Math.PI / 4; //45度  相对于父级
-
-  // 添加轨道遥杆 可指定观察对象
-  const controls = new OrbitControls(camera, renderer.domElement);
-  // 阻尼惯性 系数
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  // 自动旋转
-  // controls.autoRotate = true;
-
-  // 纹理加载器
-  let textureLoader = new THREE.TextureLoader();
-  // 加载纹理
-  let texture = textureLoader.load("");
-  // 加载ao贴图
-  let aoMap = textureLoader.load("");
-
-  let planeGeometry = new THREE.PlaneGeometry(1, 1);
-  let planeMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    map: texture,
-    transparent: true,
-    aoMap: aoMap,
-  });
-  let plane2 = new THREE.Mesh(planeGeometry, planeMaterial);
-  scene.add(plane2);
-
-  // 设置相机位置
+  // 将相机向后移动以便看到模型
   camera.position.z = 5;
-  camera.lookAt(0, 0, 0);
-
-  const axesHelper = new THREE.AxesHelper(5);
-  scene.add(axesHelper);
-
-  const animate = () => {
-    controls.update();
-    requestAnimationFrame(animate);
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    // 渲染
-    renderer.render(scene, camera);
-  };
-
-  animate();
-
-  /*  画布自适应窗口大小 */
-  window.addEventListener("resize", () => {
-    // 渲染器宽高比
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    // 相机宽高比
-    camera.aspect = window.innerWidth / window.innerHeight;
-    // 相机投影矩阵
-    camera.updateProjectionMatrix();
-  });
-
-  // 添加调试工具栏
-  const gui = new GUI();
-  const eventObj = {
-    FullScreen: function () {
-      document.body.requestFullscreen();
-      console.log("全屏");
-    },
-    ExitFullScreen: function () {
-      document.exitFullscreen();
-    },
-  };
-  gui.add(eventObj, "FullScreen"); //.name('重命名')
-  gui.add(eventObj, "ExitFullScreen");
-
-  // 控制位置
-  // 创建层级 展开
-  // gui.add(cube.position, 'x', -5, 5).name('立方体位置')// 限制x的范围方式一
-  const folder = gui.addFolder("立方体");
-  folder
-    .add(cube.position, "x")
-    .min(-10)
-    .max(10)
-    .step(1)
-    .name("x")
-    .onChange((val) => {
-      console.log("x变化");
-    }); // 限制x的范围方式二
-  // folder.add(cube.position, 'y').min(-10).max(10).step(1).name('y').onFinishChange((val) => {
-  //     console.log('x变化')
-  // })
-  folder.add(cube.position, "z").min(-10).max(10).step(1).name("z");
-
-  // folder.add(parentMaterial, 'wireframe').name('父元素线框模式')
-
-  // // 颜色修改
-  // folder.addColor({ cubeColor: '#00ff00' }, 'cubeColor').name('子立方体颜色').onChange((val) => {
-  //     cube.material.color.set(val)
-  // })
-};
-
-const initFromBlender = () => {
-  // 创建场景
-  const scene = new THREE.Scene();
-  // 创建相机
-  const camera = new THREE.PerspectiveCamera(
-    45, //视角
-    window.innerWidth / window.innerHeight,
-    0.1, //近平面
-    1000 //远平面
-  );
 
   // 创建渲染器
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight); //设置为窗口大小
-  document.body.appendChild(renderer.domElement);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  // 启用阴影
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // 清空容器并添加渲染器
+  container.innerHTML = "";
+  container.appendChild(renderer.domElement);
+
+  // 添加光源以便看到模型
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight.position.set(1, 1, 1);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
 
   // 添加轨道遥杆 可指定观察对象
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -192,67 +64,181 @@ const initFromBlender = () => {
 
   const axesHelper = new THREE.AxesHelper(5);
   scene.add(axesHelper);
-
-  const animate = () => {
-    controls.update();
-    requestAnimationFrame(animate);
-    // 渲染
-    renderer.render(scene, camera);
-  };
-
-  animate();
-
-  /*  画布自适应窗口大小 */
-  window.addEventListener("resize", () => {
-    // 渲染器宽高比
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    // 相机宽高比
-    camera.aspect = window.innerWidth / window.innerHeight;
-    // 相机投影矩阵
-    camera.updateProjectionMatrix();
-  });
-
-  let params = {};
-
-  // 添加调试工具栏
-  const gui = new GUI();
-
-  //雾 线性
-  // scene.fog = new THREE.Fog(0x999999, 0.1, 50);
-  // 指数
-  // scene.fog = new THREE.FogExp2(0x999999,0.1)
 
   // --------------------------------导入模型
   // 实例化加载器 gltf
-  // 加载模型
-  // const gltfLoader = new GLTFLoader();
-  // gltfLoader.load(
-  //     './night.glb',
-  //     (gltf) => {
-  //         console.log('success', gltf)
-  //         scene.add(gltf.scene)
-  //         const leftLight = gltf.scene.getObjectByName('左')
-  //         leftLight.visible = false
-  //         const rightLight = gltf.scene.getObjectByName('右')
-  //         rightLight.visible = false
-  //         const fire = gltf.scene.getObjectByName('空物体005')?.getObjectByName('立方体009')
-  //         fire.visible = false
-  //     }
-  // )
+  // 配置DRACOLoader
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath(
+    "https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+  );
 
-  // 压缩
-  // let dracoloader = new DRACOLoader();
-  // dracoloader.setDecoderPath('')
+  // 将DRACOLoader设置到GLTFLoader
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(dracoLoader);
 
-  // 加载环境贴图
-  // const rgbeLoader = new RGBELoader()
-  // rgbeLoader.load('./grass.hdr', (envbg => {
-  //     envbg.mapping = THREE.EquirectangularReflectionMapping;
-  //     scene.environment = envbg
-  //     console.log('envbg')
-  // }))
+  // 加载模型 - 使用/public目录下的文件应以/开头
+  console.log("开始加载模型...");
+  gltfLoader.load(
+    "/want.glb",
+    // 成功回调
+    (gltf) => {
+      console.log("模型加载成功", gltf);
+      scene.add(gltf.scene);
+
+      // 输出场景中的所有对象
+      console.log("场景中的对象:", gltf.scene);
+      const objectNames: string[] = [];
+      gltf.scene.traverse((child) => {
+        console.log("对象名称:", child.name, "类型:", child.type);
+        objectNames.push(child.name);
+      });
+      console.log("所有对象名称:", objectNames);
+
+      // 尝试隐藏灯光（如果存在）
+      const leftLight = gltf.scene.getObjectByName("左");
+      if (leftLight) {
+        leftLight.visible = false;
+        console.log("已隐藏左灯光");
+      }
+
+      const rightLight = gltf.scene.getObjectByName("右");
+      if (rightLight) {
+        rightLight.visible = false;
+        console.log("已隐藏右灯光");
+      }
+
+      // 尝试获取火的效果对象
+      const fire = gltf.scene
+        .getObjectByName("空物体005")
+        ?.getObjectByName("立方体009");
+      if (fire) {
+        fire.visible = false;
+        console.log("已隐藏火效果");
+      }
+
+      // 将模型置于合适的位置和大小
+      gltf.scene.position.set(0, 0, 0);
+
+      // 计算模型的包围盒以便调整相机
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+
+      console.log("模型中心:", center);
+      console.log("模型尺寸:", size);
+
+      // 调整相机位置以便更好地查看模型
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+      cameraZ *= 1.5; // 增加一些边距
+
+      camera.position.z = cameraZ;
+      camera.lookAt(center);
+
+      console.log("调整后的相机位置:", camera.position);
+
+      // 添加颜色变化功能
+      let colorIndex = 0;
+      const colors = [
+        new THREE.Color(0xff0000), // 红色
+        new THREE.Color(0x00ff00), // 绿色
+        new THREE.Color(0x0000ff), // 蓝色
+        new THREE.Color(0xffff00), // 黄色
+        new THREE.Color(0xff00ff), // 紫色
+        new THREE.Color(0x00ffff), // 青色
+        new THREE.Color(0xffffff), // 白色
+      ];
+
+      // 创建颜色变化函数
+      const changeModelColor = () => {
+        gltf.scene.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            // 为每个网格创建新的材质以避免共享材质问题
+            if (Array.isArray(mesh.material)) {
+              // 处理材质数组
+              mesh.material = mesh.material.map((material) => {
+                // 检查材质类型并相应地设置颜色
+                if ((material as THREE.MeshStandardMaterial).color) {
+                  const newMaterial = material.clone();
+                  (newMaterial as THREE.MeshStandardMaterial).color =
+                    colors[colorIndex];
+                  return newMaterial;
+                }
+                return material;
+              });
+            } else {
+              // 处理单个材质
+              if ((mesh.material as THREE.MeshStandardMaterial).color) {
+                const newMaterial = mesh.material.clone();
+                (newMaterial as THREE.MeshStandardMaterial).color =
+                  colors[colorIndex];
+                mesh.material = newMaterial;
+              }
+            }
+          }
+        });
+        colorIndex = (colorIndex + 1) % colors.length;
+      };
+
+      // 每3秒自动更换颜色
+      setInterval(changeModelColor, 3000);
+
+      // 添加点击事件监听器来手动更改颜色
+      renderer.domElement.addEventListener("click", changeModelColor);
+    },
+    // 进度回调
+    (progress) => {
+      console.log("加载进度:", (progress.loaded / progress.total) * 100 + "%");
+    },
+    // 错误回调
+    (error) => {
+      console.error("模型加载失败:", error);
+      // 添加一个错误提示立方体
+      const errorGeometry = new THREE.BoxGeometry(1, 1, 1);
+      const errorMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+      const errorCube = new THREE.Mesh(errorGeometry, errorMaterial);
+      scene.add(errorCube);
+    }
+  );
+
+  const animate = () => {
+    controls.update();
+    requestAnimationFrame(animate);
+    // 渲染
+    renderer.render(scene, camera);
+  };
+
+  console.log("启动动画循环...");
+  animate();
+
+  /*  画布自适应窗口大小 */
+  const handleResize = () => {
+    if (!container) return;
+    // 渲染器宽高比
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    // 相机宽高比
+    camera.aspect = container.clientWidth / container.clientHeight;
+    // 相机投影矩阵
+    camera.updateProjectionMatrix();
+  };
+
+  window.addEventListener("resize", handleResize);
 };
 
-export default initFromBlender;
+// 将Three.js场景包装成React组件
+const ThreeScene = () => {
+  // 使用useEffect确保只在客户端执行
+  useEffect(() => {
+    init();
+  }, []);
 
-// export const a = 1;
+  return React.createElement("div", {
+    id: "three-container",
+    style: { width: "100vw", height: "100vh" },
+  });
+};
+
+export default ThreeScene;
